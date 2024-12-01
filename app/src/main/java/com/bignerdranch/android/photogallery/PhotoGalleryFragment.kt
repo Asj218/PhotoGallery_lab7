@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -50,7 +51,13 @@ class PhotoGalleryFragment : Fragment() {
             Observer { galleryItems ->
                 Log.d(TAG, "Have gallery items from ViewModel $galleryItems")
                 // Обновить данные, поддерживающие представление утилизатора
-            })
+            }
+        )
+    }
+
+    private class PhotoHolder(itemTextView: TextView)
+        : RecyclerView.ViewHolder(itemTextView){
+        val bindTitle: (CharSequence) -> Unit = itemTextView::setText
     }
 
     companion object {
