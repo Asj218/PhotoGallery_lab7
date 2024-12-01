@@ -45,6 +45,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     //implementation("androidx.recyclerview:recyclerview:1.0.0")//или
     implementation("com.squareup.retrofit2:retrofit:2.5.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.5.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.room:room-runtime:2.6.1")
     testImplementation(libs.junit)
