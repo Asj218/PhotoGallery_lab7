@@ -1,7 +1,9 @@
 package com.bignerdranch.android.photogallery
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import retrofit2.Response
 import com.bignerdranch.android.photogallery.api.FlickrApi
 import com.bignerdranch.android.photogallery.api.FlickrResponse
 import com.bignerdranch.android.photogallery.api.PhotoResponse
@@ -42,8 +44,7 @@ class FlickrFetchr {
                 Log.d(TAG, "Response received")
                 val flickrResponse: FlickrResponse? = response.body()
                 val photoResponse: PhotoResponse? = flickrResponse?.photos
-                var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
-                    ?: mutableListOf()
+                var galleryItems: List<GalleryItem> = photoResponse?.galleryItems?: mutableListOf()
                 galleryItems = galleryItems.filterNot {
                         it.url.isBlank()
                 }
