@@ -20,7 +20,6 @@ private const val MESSAGE_DOWNLOAD = 0
 class ThumbnailDownloader<in T>(
     private val responseHandler: Handler,
     private val onThumbnailDownloaded: (T, Bitmap) -> Unit) : HandlerThread(TAG), LifecycleObserver {
-
     private var hasQuit = false
     private lateinit var requestHandler: Handler
     private val requestMap =  ConcurrentHashMap<T, String>()
@@ -67,5 +66,13 @@ class ThumbnailDownloader<in T>(
     private fun handleRequest(target: T) {
         val url = requestMap[target] ?: return
         val bitmap = flickrFetchr.fetchPhoto(url) ?: return
+        responseHandler.post(Runnable {
+            if (requestMap[target] != url || hasQuit) {
+                return@Runnable
+            }
+
+            requestMap.remove(target)
+            onThumbnailDownloaded(target, bitmap)
+        })
     }
 }
