@@ -1,12 +1,16 @@
 package com.bignerdranch.android.photogallery
 
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
+
 import android.os.HandlerThread
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import java.util.concurrent.ConcurrentHashMap
-import java.util.logging.Handler
+//import java.util.logging.Handler
 
 private const val TAG = "ThumbnailDownloader"
 private const val MESSAGE_DOWNLOAD = 0
