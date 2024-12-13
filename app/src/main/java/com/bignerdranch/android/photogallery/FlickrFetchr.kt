@@ -64,4 +64,6 @@ class FlickrFetchr {
         Log.i(TAG, "Decoded bitmap=$bitmap from Response=$response")
         return bitmap
     }
+
+    annotation class WorkerThread
 }
