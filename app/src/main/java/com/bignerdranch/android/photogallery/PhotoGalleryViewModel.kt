@@ -15,7 +15,11 @@ class PhotoGalleryViewModel(private val app: Application) : AndroidViewModel(app
     init {
         mutableSearchTerm.value = QueryPreferences.getStoredQuery(app)
         galleryItemLiveData = Transformations.switchMap(mutableSearchTerm) { searchTerm: String -> // Указан тип параметра
-            flickrFetchr.searchPhotos(searchTerm)
+            if (searchTerm.isBlank()) {
+                flickrFetchr.fetchPhotos()
+            } else {
+                flickrFetchr.searchPhotos(searchTerm)
+            }
         }
     }
 
