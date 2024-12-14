@@ -7,6 +7,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.WorkManager // Добавлено
+import androidx.work.PeriodicWorkRequest // Добавлено
+import androidx.work.Constraints // Добавлено
+import androidx.work.NetworkType // Добавлено
+import androidx.work.ExistingPeriodicWorkPolicy // Добавлено
+import java.util.concurrent.TimeUnit // Добавлено
 
 private const val TAG = "PollWorker"
 
