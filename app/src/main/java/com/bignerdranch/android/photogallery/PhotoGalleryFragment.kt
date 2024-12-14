@@ -49,17 +49,6 @@ class PhotoGalleryFragment : Fragment() {
         }
         //lifecycle.addObserver(thumbnailDownloader)
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
-
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
-            .build()
-
-        val workRequest = OneTimeWorkRequest
-            .Builder(PollWorker::class.java)
-            .setConstraints(constraints)
-            .build()
-        WorkManager.getInstance()
-            .enqueue(workRequest)
     }
 
     override fun onCreateView(
@@ -120,6 +109,14 @@ class PhotoGalleryFragment : Fragment() {
                 searchView.setQuery(photoGalleryViewModel.searchTerm, false)
             }
         }
+        val toggleItem = menu.findItem(R.id.menu_item_toggle_polling)
+        val isPolling = QueryPreferences.isPolling(requireContext())
+        val toggleItemTitle = if (isPolling) {
+            R.string.stop_polling
+        } else {
+            R.string.start_polling
+        }
+        toggleItem.setTitle(toggleItemTitle)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -132,7 +129,6 @@ class PhotoGalleryFragment : Fragment() {
                 super.onOptionsItemSelected(item)
         }
     }
-
 
     private class PhotoHolder(private val itemImageView: ImageView)
         :RecyclerView.ViewHolder(itemImageView) {
@@ -166,7 +162,6 @@ class PhotoGalleryFragment : Fragment() {
             thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
         }
     }
-
     companion object {
         fun newInstance() = PhotoGalleryFragment()
     }
