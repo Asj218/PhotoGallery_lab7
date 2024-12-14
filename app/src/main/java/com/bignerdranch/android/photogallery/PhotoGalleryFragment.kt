@@ -49,6 +49,12 @@ class PhotoGalleryFragment : Fragment() {
         }
         //lifecycle.addObserver(thumbnailDownloader)
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
+
+        val workRequest = OneTimeWorkRequest
+            .Builder(PollWorker::class.java)
+            .build()
+        WorkManager.getInstance()
+            .enqueue(workRequest)
     }
 
     override fun onCreateView(
