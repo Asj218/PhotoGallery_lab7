@@ -5,6 +5,8 @@ import android.content.Context
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.work.Worker
+import androidx.work.WorkerParameters
 
 private const val TAG = "PollWorker"
 
@@ -40,7 +42,8 @@ class PollWorker(val context: Context, workerParams: WorkerParameters): Worker(c
             QueryPreferences.setLastResultId(context, resultId)
 
             val intent = PhotoGalleryActivity.newIntent(context)
-            val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+            //val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0) ????????? вместо последующей строки
+            val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             val resources = context.resources
             val notification = NotificationCompat

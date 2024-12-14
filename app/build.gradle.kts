@@ -49,6 +49,7 @@ dependencies {
     //implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")//
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")//
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
     implementation("androidx.core:corektx:1.0.0")
     implementation("android.arch.work:workruntime:1.0.1")
     implementation("com.google.code.gson:gson:2.8.5")
