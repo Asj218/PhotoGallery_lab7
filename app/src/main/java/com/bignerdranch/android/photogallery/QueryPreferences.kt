@@ -1,26 +1,33 @@
 package com.bignerdranch.android.photogallery
 
 import android.content.Context
-import android.preference.PreferenceManager
+import android.preference.PreferenceManager // Убедитесь, что используете правильный импорт
+import android.content.SharedPreferences // Добавлено для работы с SharedPreferences
 
 class QueryPreferences {
-    private const val PREF_SEARCH_QUERY = "searchQuery"
-    private const val PREF_LAST_RESULT_ID = "lastResultId"
-    private const val PREF_IS_POLLING = "isPolling"
 
     object QueryPreferences {
+        private const val PREF_SEARCH_QUERY = "searchQuery"
+        private const val PREF_LAST_RESULT_ID = "lastResultId"
+        private const val PREF_IS_POLLING = "isPolling"
+
         fun getStoredQuery(context: Context): String {
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            return
-            val PREF_SEARCH_QUERY
-            prefs.getString(PREF_SEARCH_QUERY, "")!!
+            return prefs.getString(PREF_SEARCH_QUERY, "")!! // Исправлено: убрано лишнее
+            //val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            //return
+            //val PREF_SEARCH_QUERY
+            //prefs.getString(PREF_SEARCH_QUERY, "")!!
         }
 
         fun setStoredQuery(context: Context, query: String) {
-            PreferenceManager.getDefaultSharedPrefe rences(context)
-                .edit {
-                    .putString(PREF_SEARCH_QUERY, query)
-                }
+            PreferenceManager.getDefaultSharedPreferences(context).edit().apply { // Исправлено: добавлен apply
+                putString(PREF_SEARCH_QUERY, query)
+                apply() // Добавлено: применяем изменения
+            }
+            //PreferenceManager.getDefaultSharedPrefe rences(context).edit {
+            //        .putString(PREF_SEARCH_QUERY, query)
+            //    }
         }
         fun getLastResultId(context: Context): String {
             return PreferenceManager.getDefaultSharedPreferences(context)
@@ -28,9 +35,13 @@ class QueryPreferences {
         }
 
         fun setLastResultId(context: Context, lastResultId: String) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit {
+            PreferenceManager.getDefaultSharedPreferences(context).edit().apply { // Исправлено: добавлен apply
                 putString(PREF_LAST_RESULT_ID, lastResultId)
+                apply() // Добавлено: применяем изменения
             }
+            //PreferenceManager.getDefaultSharedPreferences(context).edit {
+            //    putString(PREF_LAST_RESULT_ID, lastResultId)
+            //}
         }
 
         fun isPolling(context: Context): Boolean {
@@ -39,9 +50,13 @@ class QueryPreferences {
         }
 
         fun setPolling(context: Context, isOn: Boolean) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit {
+            PreferenceManager.getDefaultSharedPreferences(context).edit().apply { // Исправлено: добавлен apply
                 putBoolean(PREF_IS_POLLING, isOn)
+                apply() // Добавлено: применяем изменения
             }
+            //PreferenceManager.getDefaultSharedPreferences(context).edit {
+            //    putBoolean(PREF_IS_POLLING, isOn)
+            //}
         }
     }
 }
