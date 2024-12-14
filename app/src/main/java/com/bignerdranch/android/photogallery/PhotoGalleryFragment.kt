@@ -50,8 +50,13 @@ class PhotoGalleryFragment : Fragment() {
         //lifecycle.addObserver(thumbnailDownloader)
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .build()
+
         val workRequest = OneTimeWorkRequest
             .Builder(PollWorker::class.java)
+            .setConstraints(constraints)
             .build()
         WorkManager.getInstance()
             .enqueue(workRequest)
