@@ -140,8 +140,7 @@ class PhotoGalleryFragment : Fragment() {
                     WorkManager.getInstance().cancelUniqueWork(POLL_WORK)
                     QueryPreferences.setPolling (requireContext(), false)
                 } else {
-                    val constraints = Constraints.Builder().setRequiredNetworkType
-                    (NetworkType.UNMETERED)
+                    val constraints = Constraints.Builder().setRequiredNetworkType (NetworkType.UNMETERED)
                         .build()
                     val periodicRequest = PeriodicWorkRequest
                         .Builder(PollWorker::class.java, 15, TimeUnit.MINUTES)
