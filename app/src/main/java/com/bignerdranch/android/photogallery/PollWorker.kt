@@ -13,6 +13,7 @@ private const val TAG = "PollWorker"
 class PollWorker(val context: Context, workerParams: WorkerParameters): Worker(context, workerParams) {
 
     override fun doWork(): Result {
+
         val query = QueryPreferences.getStoredQuery(context)
         val lastResultId = QueryPreferences.getLastResultId(context)
         val items: List<GalleryItem> = if (query.isEmpty()) {
@@ -20,14 +21,14 @@ class PollWorker(val context: Context, workerParams: WorkerParameters): Worker(c
                 .execute()
                 .body()
                 ?.photos
-                ?.galleryItems
+                ?.galleryItems ?: emptyList()//
         } else {
             FlickrFetchr().searchPhotosRequest(
                 query)
                 .execute()
                 .body()
                 ?.photos
-                ?.galleryItems
+                ?.galleryItems ?: emptyList()//
         } ?: emptyList()
 
         if (items.isEmpty()) {

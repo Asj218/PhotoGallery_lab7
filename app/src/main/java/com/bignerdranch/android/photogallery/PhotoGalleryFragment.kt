@@ -22,6 +22,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import androidx.work.ExistingPeriodicWorkPolicy
+import com.bignerdranch.android.photogallery.QueryPreferences
+import com.bignerdranch.android.photogallery.PollWorker
+import java.util.concurrent.TimeUnit
 import com.bignerdranch.android.photogallery.api.FlickrApi
 import retrofit2.Call
 import retrofit2.Callback
