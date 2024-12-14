@@ -10,14 +10,16 @@ class QueryPreferences {
         fun getStoredQuery(context: Context): String {
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             return
+            val PREF_SEARCH_QUERY
             prefs.getString(PREF_SEARCH_QUERY, "")!!
         }
 
-        fun setStoredQuery(context: Context, query: String) {
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .edit{
-                .putString(PREF_SEARCH_QUERY, query)
-            }
+        fun setStoredQuery(context: Context, query:
+        String) {
+            PreferenceManager.getDefaultSharedPrefe rences(context)
+                .edit {
+                    .putString(PREF_SEARCH_QUERY, query)
+                }
         }
     }
 }
