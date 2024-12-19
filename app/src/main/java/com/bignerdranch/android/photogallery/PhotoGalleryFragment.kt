@@ -41,22 +41,27 @@ private const val TAG = "PhotoGalleryFragment"
 private const val POLL_WORK = "POLL_WORK"
 
 class PhotoGalleryFragment : Fragment() {
-    private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
-    private lateinit var photoRecyclerView: RecyclerView
-    private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private lateinit var photoGalleryViewModel : PhotoGalleryViewModel
+    private lateinit var photoRecyclerView : RecyclerView
+    private lateinit var thumbnailDownloader : ThumbnailDownloader<PhotoHolder>
+
+    private var photoRepository: PhotoRepository = PhotoRepository.get()
+
+    override fun onCreate(savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState)
+
         retainInstance = true
         setHasOptionsMenu(true)
 
-        photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
         val responseHandler = Handler()
-        thumbnailDownloader = ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
+        thumbnailDownloader =
+            ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
                 val drawable = BitmapDrawable(resources, bitmap)
                 photoHolder.bindDrawable(drawable)
-        }
-        //lifecycle.addObserver(thumbnailDownloader)
+            }
+
+        photoGalleryViewModel = ViewModelProviders.of(this).get(PhotoGalleryViewModel::class.java)
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
 
@@ -66,7 +71,6 @@ class PhotoGalleryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         viewLifecycleOwner.lifecycle.addObserver(thumbnailDownloader.viewLifecycleObserver)
-
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
 
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
@@ -80,43 +84,59 @@ class PhotoGalleryFragment : Fragment() {
         photoGalleryViewModel.galleryItemLiveData.observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
+                Log.d(TAG, "Have gallery items from view model $galleryItems")
                 photoRecyclerView.adapter = PhotoAdapter(galleryItems)
-            }
-        )
+            })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewLifecycleOwner.lifecycle.removeObserver(
-            thumbnailDownloader.viewLifecycleObserver)
+        thumbnailDownloader.clearQueue()
+        viewLifecycleOwner.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        lifecycle.removeObserver(
-            thumbnailDownloader.fragmentLifecycleObserver)
+        lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_photo_gallery, menu)
+
         val searchItem: MenuItem = menu.findItem(R.id.menu_item_search)
         val searchView = searchItem.actionView as SearchView
         searchView.apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(queryText: String): Boolean {
-                    Log.d(TAG,"QueryTextSubmit: $queryText")
+                    Log.d(TAG, "QueryTextSubmit: $queryText")
                     photoGalleryViewModel.fetchPhotos(queryText)
                     return true
                 }
+
                 override fun onQueryTextChange(queryText: String): Boolean {
-                    Log.d(TAG,"QueryTextChange: $queryText")
+                    Log.d(TAG, "QueryTextChange: $queryText")
                     return false
                 }
             })
+
             setOnSearchClickListener {
                 searchView.setQuery(photoGalleryViewModel.searchTerm, false)
             }
+        }
+
+        val openDBButton = menu.findItem(R.id.menu_item_open_db)
+        openDBButton.setOnMenuItemClickListener {
+            val intent = Intent(activity, dbListActivity::class.java)
+            startActivity(intent)
+            true
+        }
+
+        val clearDBButton = menu.findItem(R.id.menu_item_clear_db)
+        clearDBButton.setOnMenuItemClickListener {
+            photoGalleryViewModel.clearDB()
+            Toast.makeText(PhotoGalleryApplication.getAppContext(), "База данных очищена", Toast.LENGTH_SHORT).show()
+            true
         }
         val toggleItem = menu.findItem(R.id.menu_item_toggle_polling)
         val isPolling = QueryPreferences.isPolling(requireContext())
@@ -138,56 +158,88 @@ class PhotoGalleryFragment : Fragment() {
                 val isPolling = QueryPreferences.isPolling(requireContext())
                 if (isPolling) {
                     WorkManager.getInstance().cancelUniqueWork(POLL_WORK)
-                    QueryPreferences.setPolling (requireContext(), false)
+                    QueryPreferences.setPolling(requireContext(), false)
                 } else {
-                    val constraints = Constraints.Builder().setRequiredNetworkType (NetworkType.UNMETERED)
+                    val constraints = Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.UNMETERED)
                         .build()
                     val periodicRequest = PeriodicWorkRequest
                         .Builder(PollWorker::class.java, 15, TimeUnit.MINUTES)
                         .setConstraints(constraints)
                         .build()
-                    WorkManager.getInstance().enqueueUniquePeriodicWork(POLL_WORK,ExistingPeriodicWorkPolicy.KEEP, periodicRequest)
-                    QueryPreferences.setPolling (requireContext(), true)
+                    WorkManager.getInstance().enqueueUniquePeriodicWork(POLL_WORK,
+                        ExistingPeriodicWorkPolicy.KEEP,
+                        periodicRequest)
+                    QueryPreferences.setPolling(requireContext(), true)
                 }
-                activity?.invalidateOptionsMenu ()
+                activity?.invalidateOptionsMenu()
                 return true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private class PhotoHolder(private val itemImageView: ImageView)
-        :RecyclerView.ViewHolder(itemImageView) {
-        val bindDrawable: (Drawable) -> Unit = itemImageView::setImageDrawable
+    private class PhotoHolder(private val itemImageView: View):
+        RecyclerView.ViewHolder(itemImageView), View.OnClickListener {
+        lateinit var galleryItem: GalleryItem
+        //lateinit var photoDetailViewModel: PhotoDetailViewModel
+        //lateinit var photoGalleryFragment: PhotoGalleryFragment
+        val bindDrawable: (Drawable) -> Unit = itemImageView.findViewById<ImageView>(R.id.photo_drawable)::setImageDrawable
+        val titleText = itemImageView.findViewById<TextView>(R.id.photo_title)
+
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onClick(v: View?) {
+
+            /*photoDetailViewModel.loadCrime(galleryItem.id)
+
+            photoDetailViewModel.photoLiveData.observe(
+                photoGalleryFragment,
+                Observer { galleryItem ->
+                    galleryItem?.let {
+
+                    }
+                })*/
+
+            PhotoRepository.get().addPhoto(galleryItem)
+            Toast.makeText(PhotoGalleryApplication.getAppContext(), "${this.galleryItem.title} saved!", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>)
-        : RecyclerView.Adapter<PhotoHolder>() {
+
+    private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>) : RecyclerView.Adapter<PhotoHolder>() {
+        //val photoDetailViewModel: PhotoDetailViewModel = ViewModelProviders.of(this@PhotoGalleryFragment).get(PhotoDetailViewModel::class.java)
 
         override fun onCreateViewHolder(
             parent: ViewGroup,
             viewType: Int
         ): PhotoHolder {
+
             val view = layoutInflater.inflate(
                 R.layout.list_item_gallery,
                 parent,
                 false
-            ) as ImageView
+            ) as View
             return PhotoHolder(view)
         }
-
         override fun getItemCount(): Int = galleryItems.size
-
-        override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
+        override fun onBindViewHolder(holder : PhotoHolder, position: Int) {
             val galleryItem = galleryItems[position]
             val placeholder: Drawable = ContextCompat.getDrawable(
-                    requireContext(),
-                    R.drawable.bill_up_close
-                ) ?: ColorDrawable()
+                requireContext(),
+                R.drawable.bill_up_close
+            ) ?: ColorDrawable()
             holder.bindDrawable(placeholder)
+            holder.galleryItem = galleryItem
+            holder.titleText.text = galleryItem.title
+//holder.photoDetailViewModel = photoDetailViewModel
+//holder.photoGalleryFragment = this@PhotoGalleryFragment
             thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
         }
     }
+
     companion object {
         fun newInstance() = PhotoGalleryFragment()
     }
